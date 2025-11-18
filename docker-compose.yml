@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  produtos-ms:
+    build: ./microsservico-produtos # Caminho para o Dockerfile do produtos
+    ports:
+      - "8080:8080" # Mapeia a porta 8080 do host para a porta 8080 do container
+    networks:
+      - vinheria-rede
+
+  pedidos-ms:
+    build: ./microsservico-pedidos # Caminho para o Dockerfile do pedidos
+    ports:
+      - "8081:8081" # Mapeia a porta 8081 do host para a porta 8081 do container
+    networks:
+      - vinheria-rede
+    depends_on: # Garante que produtos-ms suba antes de pedidos-ms
+      - produtos-ms
+
+networks:
+  vinheria-rede:
+    driver: bridge
