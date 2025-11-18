@@ -1,4 +1,4 @@
-# docker-compose.yml (salve este arquivo na raiz do seu projeto)
+# docker-compose.yml (este é o arquivo que precisa estar no seu repositório)
 version: '3.8'
 services:
   produtos-ms:
@@ -6,7 +6,7 @@ services:
     image: vinheria-agnello/produtos:latest
     container_name: sprint07-produtos-ms-1
     ports:
-      - "8091:8080" # ⚠️ ALTERADO: Nova porta externa para o microsserviço de produtos
+      - "8091:8080" # ✨ ESTE é o mapeamento de porta correto agora ✨
     networks:
       - vinheria-rede
 
