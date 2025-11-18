@@ -27,14 +27,13 @@ pipeline {
             }
         }
 
-        // NOVO ESTÁGIO: Instala o Docker Compose dentro do container Jenkins
         stage('Install Docker Compose') {
             steps {
                 script {
                     echo "Installing Docker Compose inside Jenkins container..."
                     sh """
                         # Download the Docker Compose binary (using v2.23.3 as an example, you can check for the latest stable)
-                        curl -L "https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                        curl -L "https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
                         # Make it executable
                         chmod +x /usr/local/bin/docker-compose
                         # Verify installation
@@ -76,7 +75,8 @@ pipeline {
                 script {
                     echo "Performing post-deploy verification..."
                     sh 'docker ps -a'
-                    echo "Verification complete. Check your application at http://localhost:3000 (pedidos) and http://localhost:3001 (produtos)."
+                    // Lembre-se de verificar as portas no seu docker-compose.yml para confirmar os acessos
+                    echo "Verification complete. Check your application at http://localhost:3000 (produtos) and http://localhost:3001 (pedidos)."
                 }
             }
         }
