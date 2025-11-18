@@ -4,30 +4,23 @@ services:
   microsservico-produtos:
     build:
       context: ./microsservico-produtos
-      dockerfile: Dockerfile
+    container_name: teste-microsservico-produtos-1
     ports:
-      - "3001:3000" # Mapeia a porta 3000 do container para a porta 3001 da máquina host
-    environment:
-      NODE_ENV: production
-      PORT: 3000 # Porta interna do container
+      - "3000:8080"
     networks:
       - vinheria-network
-    restart: always
-
   microsservico-pedidos:
     build:
       context: ./microsservico-pedidos
-      dockerfile: Dockerfile
+    container_name: teste-microsservico-pedidos-1
     ports:
-      - "3000:3000" # Mapeia a porta 3000 do container para a porta 3000 da máquina host
-    environment:
-      NODE_ENV: production
-      PORT: 3000 # Porta interna do container
-      PRODUTOS_API_URL: http://microsservico-produtos:3000 # URL para comunicação interna com o serviço de produtos
-      JWT_SECRET: sua_chave_secreta_aqui_e_bem_longa_e_randomica # Chave secreta para JWT - MUDE ISSO EM PRODUÇÃO!
+      - "3001:8081"
+
+      - PRODUTOS_MS_URL=http://microsservico-produtos:8080
     networks:
       - vinheria-network
-    restart: always
+    depends_on:
+      - microsservico-produtos
 
 networks:
   vinheria-network:

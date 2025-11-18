@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     options {
+
         skipDefaultCheckout()
     }
 
@@ -10,6 +11,7 @@ pipeline {
             steps {
                 script {
                     echo "Checking out code from SCM..."
+
                     checkout scm
                     echo "Code checked out."
                 }
@@ -32,11 +34,12 @@ pipeline {
                 script {
                     echo "Installing Docker Compose inside Jenkins container..."
                     sh """
-                        # Download the Docker Compose binary (using v2.23.3 as an example, you can check for the latest stable)
+                        # Baixa o binário do Docker Compose v2.23.3 (versão mais recente estável)
+                        # O '\$' é para escapar o '$' para o Groovy, garantindo que o shell o interprete corretamente.
                         curl -L "https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
-                        # Make it executable
+                        # Torna o binário executável
                         chmod +x /usr/local/bin/docker-compose
-                        # Verify installation
+                        # Verifica a instalação
                         docker-compose --version
                     """
                     echo "Docker Compose installed successfully."
@@ -48,7 +51,9 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker images for microsservico-produtos and microsservico-pedidos..."
+
                     dir('.') {
+
                         sh 'docker-compose build --no-cache'
                     }
                     echo "Docker images built successfully."
@@ -60,9 +65,11 @@ pipeline {
             steps {
                 script {
                     echo "Deploying services using Docker Compose..."
+
                     dir('.') {
-                        // Derruba containers antigos antes de subir novos
+
                         sh 'docker-compose down --remove-orphans || true'
+
                         sh 'docker-compose up -d --force-recreate'
                     }
                     echo "Services deployed successfully!"
@@ -74,16 +81,19 @@ pipeline {
             steps {
                 script {
                     echo "Performing post-deploy verification..."
+
                     sh 'docker ps -a'
-                    // Lembre-se de verificar as portas no seu docker-compose.yml para confirmar os acessos
+
                     echo "Verification complete. Check your application at http://localhost:3000 (produtos) and http://localhost:3001 (pedidos)."
                 }
             }
         }
     }
 
+
     post {
         always {
+
             cleanWs()
         }
         success {
