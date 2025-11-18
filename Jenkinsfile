@@ -1,38 +1,62 @@
-// Jenkinsfile
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout()
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 script {
+                    echo "Checking out code from SCM..."
                     checkout scm
-                    echo "Checked out code."
+                    echo "Code checked out."
                 }
             }
         }
-        stage('Build and Deploy Docker Compose') {
+
+        stage('Simple Build / Verification') {
             steps {
                 script {
-                    echo "Building and deploying services with Docker Compose..."
+                    echo "==================================="
+                    echo "   Iniciando Deploy da Vinheria!   "
+                    echo "   Verificação inicial concluída.  "
+                    echo "==================================="
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    echo "Building Docker images for microsservico-produtos and microsservico-pedidos..."
                     dir('.') {
-                        // Este comando derruba e remove containers antigos, liberando as portas
-                        sh 'docker-compose down --remove-orphans'
-                        // Construir as imagens e iniciar os serviços em modo detached
-                        sh 'docker-compose up --build -d'
+                        sh 'docker-compose build --no-cache'
                     }
-                    echo "Docker Compose services are up and running."
+                    echo "Docker images built successfully."
                 }
             }
         }
-        stage('Test Services (Optional)') {
+
+        stage('Deploy Services') {
             steps {
                 script {
-                    echo "Running post-deployment tests (if any)..."
-                    // Exemplo de como testar o microsserviço de produtos na nova porta
-                    // sh 'curl http://localhost:8091/produtos'
-                    // sh 'curl http://localhost:8081/pedidos'
-                    echo "Tests completed."
+                    echo "Deploying services using Docker Compose..."
+                    dir('.') {
+                        sh 'docker-compose up -d --force-recreate'
+                    }
+                    echo "Services deployed successfully!"
+                }
+            }
+        }
+
+        stage('Post-Deploy Verification') {
+            steps {
+                script {
+                    echo "Performing post-deploy verification..."
+                    sh 'docker ps -a'
+                    echo "Verification complete. Check your application at http://localhost:3000 (pedidos) and http://localhost:3001 (produtos)."
                 }
             }
         }
@@ -40,14 +64,13 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline finished."
+            cleanWs()
         }
         success {
-            echo "Pipeline succeeded!"
+            echo 'Pipeline executado com sucesso!'
         }
         failure {
-            echo "Pipeline failed!"
-            // Você pode adicionar ações aqui para falha, como notificação.
+            echo 'Pipeline falhou!'
         }
     }
 }

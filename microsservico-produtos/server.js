@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 3000; // Usa a variável de ambiente ou 3000 como padrão
 
 app.get('/', (req, res) => {
     res.send('Olá do Microsserviço de Produtos da Vinheria Agnello! 🍇');

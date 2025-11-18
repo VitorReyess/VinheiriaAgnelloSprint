@@ -1,28 +1,34 @@
-# docker-compose.yml (este é o arquivo que precisa estar no seu repositório)
 version: '3.8'
-services:
-  produtos-ms:
-    build: ./microsservico-produtos
-    image: vinheria-agnello/produtos:latest
-    container_name: sprint07-produtos-ms-1
-    ports:
-      - "8091:8080" # ✨ ESTE é o mapeamento de porta correto agora ✨
-    networks:
-      - vinheria-rede
 
-  pedidos-ms:
-    build: ./microsservico-pedidos
-    image: vinheria-agnello/pedidos:latest
-    container_name: sprint07-pedidos-ms-1
+services:
+  microsservico-produtos:
+    build:
+      context: ./microsservico-produtos
+      dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - "3001:3000" # Mapeia a porta 3000 do container para a porta 3001 da máquina host
     environment:
-      - PRODUTOS_API_URL=http://produtos-ms:8080
-    depends_on:
-      - produtos-ms
+      NODE_ENV: production
+      PORT: 3000 # Porta interna do container
     networks:
-      - vinheria-rede
+      - vinheria-network
+    restart: always
+
+  microsservico-pedidos:
+    build:
+      context: ./microsservico-pedidos
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000" # Mapeia a porta 3000 do container para a porta 3000 da máquina host
+    environment:
+      NODE_ENV: production
+      PORT: 3000 # Porta interna do container
+      PRODUTOS_API_URL: http://microsservico-produtos:3000 # URL para comunicação interna com o serviço de produtos
+      JWT_SECRET: sua_chave_secreta_aqui_e_bem_longa_e_randomica # Chave secreta para JWT - MUDE ISSO EM PRODUÇÃO!
+    networks:
+      - vinheria-network
+    restart: always
 
 networks:
-  vinheria-rede:
+  vinheria-network:
     driver: bridge
