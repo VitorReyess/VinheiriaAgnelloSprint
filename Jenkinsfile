@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -45,7 +46,6 @@ pipeline {
                 script {
                     echo "Iniciando execução de testes para os microsserviços..."
 
-                    // --- Testes para microsservico-produtos ---
                     echo "Executando testes para microsservico-produtos..."
                     dir('microsservico-produtos') {
                         sh """#!/bin/bash
@@ -54,7 +54,6 @@ pipeline {
                         """
                     }
 
-                    // --- Testes para microsservico-pedidos ---
                     echo "Executando testes para microsservico-pedidos..."
                     dir('microsservico-pedidos') {
                         sh """#!/bin/bash

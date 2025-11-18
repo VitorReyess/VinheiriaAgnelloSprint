@@ -1,20 +1,27 @@
+# docker-compose.yml (salve este arquivo na raiz do seu projeto)
 version: '3.8'
 services:
   produtos-ms:
-    build: ./microsservico-produtos # Caminho para o Dockerfile do produtos
+    build: ./microsservico-produtos
+    image: vinheria-agnello/produtos:latest
+    container_name: sprint07-produtos-ms-1
     ports:
-      - "8080:8080" # Mapeia a porta 8080 do host para a porta 8080 do container
+      - "80800:8080" # Porta externa 80800 mapeada para a interna 8080
     networks:
       - vinheria-rede
 
   pedidos-ms:
-    build: ./microsservico-pedidos # Caminho para o Dockerfile do pedidos
+    build: ./microsservico-pedidos
+    image: vinheria-agnello/pedidos:latest
+    container_name: sprint07-pedidos-ms-1
     ports:
-      - "8081:8081" # Mapeia a porta 8081 do host para a porta 8081 do container
+      - "8081:8081"
+    environment:
+      - PRODUTOS_API_URL=http://produtos-ms:8080 # Comunicação interna entre microsserviços
+    depends_on:
+      - produtos-ms
     networks:
       - vinheria-rede
-    depends_on: # Garante que produtos-ms suba antes de pedidos-ms
-      - produtos-ms
 
 networks:
   vinheria-rede:
