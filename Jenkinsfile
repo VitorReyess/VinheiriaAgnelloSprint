@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-
         DOCKER_HOST_OVERRIDE = "tcp://host.docker.internal:2375"
     }
 
@@ -26,17 +25,13 @@ pipeline {
                 script {
                     echo "Construindo imagens Docker para microsserviços..."
 
-                    // Navega para o diretório do microsservico-produtos e constrói a imagem
                     dir('microsservico-produtos') {
                         echo "Construindo imagem Docker para microsservico-produtos..."
-                        // Adicionando DOCKER_HOST para que os comandos docker dentro do script se conectem ao host
                         sh "DOCKER_HOST=${env.DOCKER_HOST_OVERRIDE} docker build -t vinheria-agnello/produtos:latest -t vinheria-agnello/produtos:${BUILD_NUMBER} ."
                     }
 
-                    // Navega para o diretório do microsservico-pedidos e constrói a imagem
                     dir('microsservico-pedidos') {
                         echo "Construindo imagem Docker para microsservico-pedidos..."
-                        // Adicionando DOCKER_HOST para que os comandos docker dentro do script se conectem ao host
                         sh "DOCKER_HOST=${env.DOCKER_HOST_OVERRIDE} docker build -t vinheria-agnello/pedidos:latest -t vinheria-agnello/pedidos:${BUILD_NUMBER} ."
                     }
 
@@ -48,29 +43,31 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Usamos #!/bin/bash para garantir a compatibilidade com sintaxe bash-specifica
-                    // e evitar o erro "Syntax error: '(' unexpected".
-                    sh '''#!/bin/bash
-                        echo "Iniciando execução de testes para os microsserviços..."
-                        
-                        # --- Testes para microsservico-produtos ---
-                        echo "Executando testes para microsservico-produtos..."
-                        cd microsservico-produtos
-                        # Substitua 'npm test' pelo comando de teste real do seu projeto de produtos.
-                        # Certifique-se que este comando retorna um código de saída diferente de zero em caso de falha.
-                        npm test
-                        cd .. # Retorna para o diretório raiz do workspace
-                        
-                        # --- Testes para microsservico-pedidos ---
-                        echo "Executando testes para microsservico-pedidos..."
-                        cd microsservico-pedidos
-                        # Substitua 'npm test' pelo comando de teste real do seu projeto de pedidos.
-                        # Certifique-se que este comando retorna um código de saída diferente de zero em caso de falha.
-                        npm test
-                        cd .. # Retorna para o diretório raiz do workspace
-                        
-                        echo "Todos os testes foram concluídos com sucesso!"
-                    '''
+                    echo "Iniciando execução de testes para os microsserviços..."
+
+                    // --- Testes para microsservico-produtos ---
+                    echo "Executando testes para microsservico-produtos..."
+                    dir('microsservico-produtos') {
+                        sh """#!/bin/bash
+                            set -e
+                            DOCKER_HOST=${env.DOCKER_HOST_OVERRIDE} docker run --rm \
+                                vinheria-agnello/produtos:latest \
+                                npm test
+                        """
+                    }
+
+                    // --- Testes para microsservico-pedidos ---
+                    echo "Executando testes para microsservico-pedidos..."
+                    dir('microsservico-pedidos') {
+                        sh """#!/bin/bash
+                            set -e
+                            DOCKER_HOST=${env.DOCKER_HOST_OVERRIDE} docker run --rm \
+                                vinheria-agnello/pedidos:latest \
+                                npm test
+                        """
+                    }
+
+                    echo "Todos os testes foram concluídos com sucesso!"
                 }
             }
         }
@@ -78,8 +75,9 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 script {
+                    echo "Parando e removendo serviços Docker Compose anteriores (se existirem)..."
+                    sh "DOCKER_HOST=${env.DOCKER_HOST_OVERRIDE} docker-compose down --remove-orphans"
                     echo "Subindo os serviços com Docker Compose..."
-                    // Adicionando DOCKER_HOST para que os comandos docker-compose se conectem ao host
                     sh "DOCKER_HOST=${env.DOCKER_HOST_OVERRIDE} docker-compose up -d"
                     echo "Serviços iniciados com Docker Compose."
                 }
