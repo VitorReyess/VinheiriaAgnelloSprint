@@ -9,13 +9,14 @@ services:
       - "3000:8080"
     networks:
       - vinheria-network
+
   microsservico-pedidos:
     build:
       context: ./microsservico-pedidos
     container_name: teste-microsservico-pedidos-1
     ports:
       - "3001:8081"
-
+    environment:
       - PRODUTOS_MS_URL=http://microsservico-produtos:8080
     networks:
       - vinheria-network
