@@ -27,6 +27,24 @@ pipeline {
             }
         }
 
+        // NOVO ESTÁGIO: Instala o Docker Compose dentro do container Jenkins
+        stage('Install Docker Compose') {
+            steps {
+                script {
+                    echo "Installing Docker Compose inside Jenkins container..."
+                    sh """
+                        # Download the Docker Compose binary (using v2.23.3 as an example, you can check for the latest stable)
+                        curl -L "https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                        # Make it executable
+                        chmod +x /usr/local/bin/docker-compose
+                        # Verify installation
+                        docker-compose --version
+                    """
+                    echo "Docker Compose installed successfully."
+                }
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 script {
@@ -44,8 +62,8 @@ pipeline {
                 script {
                     echo "Deploying services using Docker Compose..."
                     dir('.') {
-                        // **ADICIONADO: Derruba containers antigos antes de subir novos**
-                        sh 'docker-compose down --remove-orphans || true' // Adicionado '|| true' para não falhar o pipeline se nada estiver rodando
+                        // Derruba containers antigos antes de subir novos
+                        sh 'docker-compose down --remove-orphans || true'
                         sh 'docker-compose up -d --force-recreate'
                     }
                     echo "Services deployed successfully!"
