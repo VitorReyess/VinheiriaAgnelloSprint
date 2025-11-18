@@ -44,6 +44,8 @@ pipeline {
                 script {
                     echo "Deploying services using Docker Compose..."
                     dir('.') {
+                        // **ADICIONADO: Derruba containers antigos antes de subir novos**
+                        sh 'docker-compose down --remove-orphans || true' // Adicionado '|| true' para não falhar o pipeline se nada estiver rodando
                         sh 'docker-compose up -d --force-recreate'
                     }
                     echo "Services deployed successfully!"
