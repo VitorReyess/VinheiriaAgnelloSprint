@@ -31,16 +31,9 @@ pipeline {
             steps {
                 script {
                     echo "Installing Docker Compose inside Jenkins container..."
-                    // A CORREÇÃO ESTÁ AQUI: Usando aspas simples triplas (''')
-                    // para garantir que Groovy não tente interpretar o '$'
                     sh '''
-                        # Baixa o binário do Docker Compose v2.23.3 (versão mais recente estável)
-                        # Usar aspas simples triplas evita que Groovy tente interpretar o '$'.
-                        # Assim, '$(uname -s)' e '$(uname -m)' serão passados LITERALMENTE para o shell.
                         curl -L "https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                        # Torna o binário executável
                         chmod +x /usr/local/bin/docker-compose
-                        # Verifica a instalação
                         docker-compose --version
                     '''
                     echo "Docker Compose installed successfully."
@@ -65,21 +58,21 @@ pipeline {
                 script {
                     echo "Deploying services using Docker Compose..."
                     dir('.') {
-                        sh 'docker-compose down --remove-orphans || true'
+                        sh 'docker-compose down --remove-orphans || true' // O '|| true' garante que não falhe se não houver nada para derrubar
                         sh 'docker-compose up -d --force-recreate'
                     }
                     echo "Services deployed successfully!"
                 }
             }
-            // Não se esqueça de que você precisará liberar a porta 3000 na sua máquina Windows,
-            // caso ela esteja em uso, antes de executar esta etapa.
         }
 
         stage('Post-Deploy Verification') {
             steps {
                 script {
                     echo "Performing post-deploy verification..."
-                    sh 'docker ps -a'
+                    dir('.') { // É importante estar no diretório do docker-compose.yml
+                        sh 'docker-compose ps -a' // <-- CORREÇÃO AQUI! Usando docker-compose ps -a
+                    }
                     echo "Verification complete. Check your application at http://localhost:3000 (produtos) and http://localhost:3001 (pedidos)."
                 }
             }
