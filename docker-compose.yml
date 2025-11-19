@@ -6,7 +6,7 @@ services:
       context: ./microsservico-produtos
     container_name: teste-microsservico-produtos-1
     ports:
-      - "3000:8080"
+      - "3000:3000"
     networks:
       - vinheria-network
 
@@ -15,9 +15,9 @@ services:
       context: ./microsservico-pedidos
     container_name: teste-microsservico-pedidos-1
     ports:
-      - "3001:8081"
+      - "3001:3000"
     environment:
-      - PRODUTOS_MS_URL=http://microsservico-produtos:8080
+      - PRODUTOS_MS_URL=http://microsservico-produtos:3000
     networks:
       - vinheria-network
     depends_on:
